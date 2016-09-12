@@ -1,7 +1,7 @@
-<idea-plugin version="2">
+<idea-plugin version="3">
     <id>moe.xing.databindingformatter</id>
     <name>Data Binding Formatter</name>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
     <vendor email="databinding@xing.moe" url="http://loli.xing.moe">Qixingchen</vendor>
 
     <description><![CDATA[
@@ -15,7 +15,10 @@
       find exits getter and setter.<br>
       allow select field.<br>
 <br>
-      GitHub repo: https://github.com/Qixingchen/DataBindingModelFormatter <br>
+      <a href="https://github.com/Qixingchen/DataBindingModelFormatter">GitHub repo</a>: https://github.com/Qixingchen/DataBindingModelFormatter <br>
+      <br>
+      If you find a Bug,please create a Issue in <a href="https://github.com/Qixingchen/DataBindingModelFormatter/issues/new">GitHub</a>
+<br>
       </html>
     ]]></description>
 
@@ -29,6 +32,10 @@
     <!-- uncomment to enable plugin in all products
     <depends>com.intellij.modules.lang</depends>
     -->
+
+    <depends>com.intellij.modules.java</depends>
+    <depends>com.intellij.modules.lang</depends>
+
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- Add your extensions here -->
