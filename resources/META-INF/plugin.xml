@@ -1,0 +1,46 @@
+<idea-plugin version="2">
+    <id>moe.xing.databindingformatter</id>
+    <name>Data Binding Formatter</name>
+    <version>0.0.1</version>
+    <vendor email="databinding@xing.moe" url="http://loli.xing.moe">Qixingchen</vendor>
+
+    <description><![CDATA[
+     <html> Quickly add android data binding setter and getter for a model.<br>
+<br>
+      After created model,open Generate window, select Data Binding Formatter.<br>
+<br>
+      In this preview version,you still have to manually add import for BR class and add implements Observable.<br>
+<br>
+      todo:<br>
+      find exits getter and setter.<br>
+      allow select field.<br>
+<br>
+      GitHub repo: https://github.com/Qixingchen/DataBindingModelFormatter <br>
+      </html>
+    ]]></description>
+
+    <change-notes/>
+
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+    <idea-version since-build="141"/>
+
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
+    <!-- uncomment to enable plugin in all products
+    <depends>com.intellij.modules.lang</depends>
+    -->
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Add your extensions here -->
+    </extensions>
+
+
+    <actions>
+        <!-- Add your actions here -->
+        <action id="databindingformatter" class="moe.xing.databindingformatter.MainAction" text="Data Binding Formatter"
+                description="Data Binding Formatter">
+            <add-to-group group-id="GenerateGroup" anchor="first"/>
+        </action>
+    </actions>
+
+</idea-plugin>
