@@ -9,6 +9,8 @@ todo:<br>
 - [ ] find exits getter and setter.<br>
 - [ ] allow select field.<br>
 
+## screenshot
+
 Before Format:</br>
 ![](./screenshot/1.png)
 
@@ -17,3 +19,8 @@ After Format:</br>
 
 After Import BR class And Implements Observable:</br>
 ![](./screenshot/3.png)
+
+## download
+
+You can download from [JetBrans Plugin Center](https://plugins.jetbrains.com/plugin/8616?pr=idea) 
+or download from [github release page](https://github.com/Qixingchen/DataBindingModelFormatter/releases).
