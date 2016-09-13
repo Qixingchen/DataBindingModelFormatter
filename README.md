@@ -8,3 +8,12 @@ In this preview version, **you still have to manually add import for BR class an
 todo:<br>
 - [ ] find exits getter and setter.<br>
 - [ ] allow select field.<br>
+
+Before Format:</br>
+![](./screenshot/1.png)
+
+After Format:</br>
+![](./screenshot/2.png)
+
+After Import BR class And Implements Observable:</br>
+![](./screenshot/3.png)
