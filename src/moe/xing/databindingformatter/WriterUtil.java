@@ -19,7 +19,11 @@ import com.intellij.psi.search.GlobalSearchScope;
 
 import org.apache.http.util.TextUtils;
 
+import java.util.logging.Logger;
+
 import javax.annotation.Nullable;
+
+import moe.xing.databindingformatter.utils.FieldUtils;
 
 /**
  * Created by Qixingchen on 16-9-12.
@@ -33,6 +37,7 @@ class WriterUtil extends WriteCommandAction.Simple {
     private Project mProject;
     private PsiFile mFile;
     private GlobalSearchScope mSearchScope;
+    private static Logger LOGGER = Logger.getLogger(WriterUtil.class.getName());
 
     WriterUtil(PsiFile mFile, Project project, PsiClass mClass) {
         super(project, mFile);
@@ -95,6 +100,12 @@ class WriterUtil extends WriteCommandAction.Simple {
         PsiField[] fields = mClass.getFields();
 
         for (PsiField field : fields) {
+
+            LOGGER.info(field.getName() + " has getter? " + FieldUtils.hasGetter(field));
+            LOGGER.info(field.getName() + " has DB getter? " + FieldUtils.hasDBGetter(field));
+            LOGGER.info(field.getName() + " has setter? " + FieldUtils.hasSetter(field));
+            LOGGER.info(field.getName() + " has DB setter? " + FieldUtils.hasDBSetter(field));
+
             // if is PropertyChangeRegistry ,continue
             if (field.getType().equals(PsiType.getTypeByName("android.databinding.PropertyChangeRegistry", getProject(), mSearchScope))) {
                 continue;
