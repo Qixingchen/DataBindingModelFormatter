@@ -9,15 +9,21 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiUtilBase;
+
 import org.jetbrains.annotations.NotNull;
+
+import java.awt.Dimension;
+import java.util.logging.Logger;
+
+import moe.xing.databindingformatter.dialog.FieldSelectDialog;
 
 /**
  * Created by qixingchen on 16-9-7.
- *
+ * <p>
  * MainAction
  */
 public class MainAction extends BaseGenerateAction {
-
+    private static Logger LOGGER = Logger.getLogger(MainAction.class.getName());
 
     @SuppressWarnings("unused")
     public MainAction() {
@@ -55,13 +61,23 @@ public class MainAction extends BaseGenerateAction {
 
         assert mFile != null;
         mClass = getTargetClass(editor, mFile);
+        assert mClass != null;
 
-        try {
-            new WriterUtil(mFile, mProject, mClass).execute();
-        } catch (Throwable throwable) {
-            throwable.printStackTrace();
-        }
+        FieldSelectDialog fieldSelectDialog = new FieldSelectDialog(fields -> {
+            try {
+                new WriterUtil(mFile, mProject, mClass, fields).execute();
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
+
+        }, mClass);
+
+        fieldSelectDialog.setMinimumSize(new Dimension(400, 300));
+        fieldSelectDialog.setLocationRelativeTo(null);
+        fieldSelectDialog.setVisible(true);
+
 
     }
+
 
 }

@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
+import com.intellij.psi.PsiCodeBlock;
 import com.intellij.psi.PsiElementFactory;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiFile;
@@ -12,16 +13,18 @@ import com.intellij.psi.PsiJavaCodeReferenceElement;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiReferenceList;
+import com.intellij.psi.PsiStatement;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.psi.codeStyle.JavaCodeStyleManager;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.util.PropertyUtil;
 
 import org.apache.http.util.TextUtils;
+import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.logging.Logger;
-
-import javax.annotation.Nullable;
 
 import moe.xing.databindingformatter.utils.FieldUtils;
 
@@ -36,15 +39,17 @@ class WriterUtil extends WriteCommandAction.Simple {
     private PsiElementFactory mFactory;
     private Project mProject;
     private PsiFile mFile;
+    private List<PsiField> mFields;
     private GlobalSearchScope mSearchScope;
     private static Logger LOGGER = Logger.getLogger(WriterUtil.class.getName());
 
-    WriterUtil(PsiFile mFile, Project project, PsiClass mClass) {
+    WriterUtil(PsiFile mFile, Project project, PsiClass mClass, List<PsiField> fields) {
         super(project, mFile);
         mFactory = JavaPsiFacade.getElementFactory(project);
         this.mFile = mFile;
         this.mProject = project;
         this.mClass = mClass;
+        this.mFields = fields;
         this.mSearchScope = GlobalSearchScope.allScope(getProject());
     }
 
@@ -61,7 +66,7 @@ class WriterUtil extends WriteCommandAction.Simple {
     private void addDataBinding() {
 
         addImplements();
-        addGetterAndSetter();
+        addGetterAndSetter(mFields);
         addPropertyMethods();
     }
 
@@ -95,88 +100,135 @@ class WriterUtil extends WriteCommandAction.Simple {
     /**
      * add getter and setter for field
      */
-    private void addGetterAndSetter() {
+    private void addGetterAndSetter(List<PsiField> fields) {
         String BRName = findBR();
-        PsiField[] fields = mClass.getFields();
 
         for (PsiField field : fields) {
-
-            LOGGER.info(field.getName() + " has getter? " + FieldUtils.hasGetter(field));
-            LOGGER.info(field.getName() + " has DB getter? " + FieldUtils.hasDBGetter(field));
-            LOGGER.info(field.getName() + " has setter? " + FieldUtils.hasSetter(field));
-            LOGGER.info(field.getName() + " has DB setter? " + FieldUtils.hasDBSetter(field));
-
-            // if is PropertyChangeRegistry ,continue
-            if (field.getType().equals(PsiType.getTypeByName("android.databinding.PropertyChangeRegistry", getProject(), mSearchScope))) {
-                continue;
+            if (!FieldUtils.hasDBGetter(field)) {
+                if (FieldUtils.hasGetter(field)) {
+                    addDBForJavaGetter(field);
+                } else {
+                    addGetter(field);
+                }
             }
-
-            String getter =
-                    "public " + field.getType().getPresentableText() + " get" + getFirstUpCaseName(field.getName()) +
-                            "(){ \n" +
-                            "return " + field.getName() + "; \n" +
-                            "}";
-            PsiMethod getMethod = mFactory.createMethodFromText(getter, mClass);
-            getMethod.getModifierList().addAnnotation("android.databinding.Bindable");
-            mClass.add(getMethod);
-
-            String setter = "public void set" + getFirstUpCaseName(field.getName()) +
-                    "(" + field.getType().getPresentableText() + " " +
-                    field.getName() + "){\n " +
-                    "        this." + field.getName() + " = " + field.getName() + ";\n" +
-                    "        notifyChange( " + BRName + "." + field.getName() + ");\n" +
-                    "    }";
-            mClass.add(mFactory.createMethodFromText(setter, mClass));
+            if (!FieldUtils.hasDBSetter(field)) {
+                if (FieldUtils.hasSetter(field)) {
+                    addDBForJavaSetter(field, BRName);
+                } else {
+                    addSetter(field, BRName);
+                }
+            }
         }
+    }
+
+    private void addGetter(@NotNull PsiField field) {
+        String getter =
+                "public " + field.getType().getPresentableText() + " get" + getFirstUpCaseName(field.getName()) +
+                        "(){ \n" +
+                        "return " + field.getName() + "; \n" +
+                        "}";
+        PsiMethod getMethod = mFactory.createMethodFromText(getter, mClass);
+        getMethod.getModifierList().addAnnotation("android.databinding.Bindable");
+        mClass.add(getMethod);
+    }
+
+    private void addDBForJavaGetter(@NotNull PsiField psiField) {
+        PsiMethod getter = PropertyUtil.findGetterForField(psiField);
+        assert getter != null;
+        getter.getModifierList().addAnnotation("android.databinding.Bindable");
+    }
+
+    private void addSetter(@NotNull PsiField field, @NotNull String BRName) {
+        String setter = "public void set" + getFirstUpCaseName(field.getName()) +
+                "(" + field.getType().getPresentableText() + " " +
+                field.getName() + "){\n " +
+                "        this." + field.getName() + " = " + field.getName() + ";\n" +
+                "        notifyChange( " + BRName + "." + field.getName() + ");\n" +
+                "    }";
+        mClass.add(mFactory.createMethodFromText(setter, mClass));
+    }
+
+    private void addDBForJavaSetter(@NotNull PsiField psiField, @NotNull String BRName) {
+        PsiMethod setter = PropertyUtil.findSetterForField(psiField);
+        PsiCodeBlock codeBlock = setter.getBody();
+        if (codeBlock == null) {
+            return;
+        }
+        PsiStatement last = codeBlock.getStatements()[codeBlock.getStatements().length - 1];
+        PsiStatement notify = mFactory.createStatementFromText("notifyChange( " + BRName + "." + psiField.getName() + ");", setter);
+        codeBlock.addAfter(notify, last);
     }
 
     /**
      * add PropertyChangeRegistry field and addCallback & removeCallback
      */
     private void addPropertyMethods() {
+        boolean fieldExist = false;
+        boolean notifyChangeExist = false;
+        boolean addListenerExist = false;
+        boolean removeListenerExist = false;
         for (PsiField field : mClass.getFields()) {
             // if has PropertyChangeRegistry ,do not add
-            // TODO: 2017/8/4 find add/remove listener method
             if (field.getType().equals(PsiType.getTypeByName("android.databinding.PropertyChangeRegistry", getProject(), mSearchScope))) {
-                return;
+                fieldExist = true;
+                break;
             }
         }
 
-        String pcrFieldCreate = "private "
-                .concat(" transient android.databinding.PropertyChangeRegistry propertyChangeRegistry = new android.databinding.PropertyChangeRegistry();");
+        for (PsiMethod psiMethod : mClass.getMethods()) {
+            if ("notifyChange".toLowerCase().equals(psiMethod.getName().toLowerCase())) {
+                notifyChangeExist = true;
+            }
+            if ("addOnPropertyChangedCallback".toLowerCase().equals(psiMethod.getName().toLowerCase())) {
+                addListenerExist = true;
+            }
+            if ("removeOnPropertyChangedCallback".toLowerCase().equals(psiMethod.getName().toLowerCase())) {
+                removeListenerExist = true;
+            }
+        }
 
-        mClass.add(mFactory.createFieldFromText(pcrFieldCreate, mClass));
+        if (!fieldExist) {
+            String pcrFieldCreate = "private "
+                    .concat(" transient android.databinding.PropertyChangeRegistry propertyChangeRegistry = new android.databinding.PropertyChangeRegistry();");
 
-        String pcrNotifyMethodCreate = "private void notifyChange(int propertyId) {\n" +
-                "        if (propertyChangeRegistry == null) {\n" +
-                "            propertyChangeRegistry = new PropertyChangeRegistry();\n" +
-                "        }\n" +
-                "        propertyChangeRegistry.notifyChange(this, propertyId);\n" +
-                "    } ";
+            mClass.add(mFactory.createFieldFromText(pcrFieldCreate, mClass));
+        }
 
-        mClass.add(mFactory.createMethodFromText(pcrNotifyMethodCreate, mClass));
+        if (!notifyChangeExist) {
 
-        String pcrAddListener =
-                "public void addOnPropertyChangedCallback(OnPropertyChangedCallback callback) {\n" +
-                        "        if (propertyChangeRegistry == null) {\n" +
-                        "            propertyChangeRegistry = new PropertyChangeRegistry();\n" +
-                        "        }\n" +
-                        "        propertyChangeRegistry.add(callback);\n" +
-                        "\n" +
-                        "    }";
-        PsiMethod pcrAddListenerMethod = mFactory.createMethodFromText(pcrAddListener, mClass);
-        pcrAddListenerMethod.getModifierList().addAnnotation("Override");
-        mClass.add(pcrAddListenerMethod);
+            String pcrNotifyMethodCreate = "private void notifyChange(int propertyId) {\n" +
+                    "        if (propertyChangeRegistry == null) {\n" +
+                    "            propertyChangeRegistry = new PropertyChangeRegistry();\n" +
+                    "        }\n" +
+                    "        propertyChangeRegistry.notifyChange(this, propertyId);\n" +
+                    "    } ";
 
-        String pcrRemoveListener =
-                "public void removeOnPropertyChangedCallback(OnPropertyChangedCallback callback) {\n" +
-                        "        if (propertyChangeRegistry != null) {\n" +
-                        "            propertyChangeRegistry.remove(callback);\n" +
-                        "        }\n" +
-                        "    }";
-        PsiMethod pcrRemoveListenerMethod = mFactory.createMethodFromText(pcrRemoveListener, mClass);
-        pcrRemoveListenerMethod.getModifierList().addAnnotation("Override");
-        mClass.add(pcrRemoveListenerMethod);
+            mClass.add(mFactory.createMethodFromText(pcrNotifyMethodCreate, mClass));
+        }
+        if (!addListenerExist) {
+            String pcrAddListener =
+                    "public void addOnPropertyChangedCallback(OnPropertyChangedCallback callback) {\n" +
+                            "        if (propertyChangeRegistry == null) {\n" +
+                            "            propertyChangeRegistry = new PropertyChangeRegistry();\n" +
+                            "        }\n" +
+                            "        propertyChangeRegistry.add(callback);\n" +
+                            "\n" +
+                            "    }";
+            PsiMethod pcrAddListenerMethod = mFactory.createMethodFromText(pcrAddListener, mClass);
+            pcrAddListenerMethod.getModifierList().addAnnotation("Override");
+            mClass.add(pcrAddListenerMethod);
+        }
+        if (!removeListenerExist) {
+            String pcrRemoveListener =
+                    "public void removeOnPropertyChangedCallback(OnPropertyChangedCallback callback) {\n" +
+                            "        if (propertyChangeRegistry != null) {\n" +
+                            "            propertyChangeRegistry.remove(callback);\n" +
+                            "        }\n" +
+                            "    }";
+            PsiMethod pcrRemoveListenerMethod = mFactory.createMethodFromText(pcrRemoveListener, mClass);
+            pcrRemoveListenerMethod.getModifierList().addAnnotation("Override");
+            mClass.add(pcrRemoveListenerMethod);
+        }
     }
 
     private String getFirstUpCaseName(String name) {
@@ -186,7 +238,7 @@ class WriterUtil extends WriteCommandAction.Simple {
         return name.substring(0, 1).toUpperCase() + name.substring(1);
     }
 
-    @Nullable
+    @NotNull
     private String findBR() {
         GlobalSearchScope scope = GlobalSearchScope.projectScope(getProject());
         String packageName = ((PsiJavaFile) mClass.getContainingFile()).getPackageName();
@@ -197,7 +249,7 @@ class WriterUtil extends WriteCommandAction.Simple {
                 if (name != null && name.startsWith(".")) {
                     name = name.replaceFirst(".", "");
                 }
-                return name;
+                return name == null ? "BR" : name;
             }
             packageName = packageName.substring(0, packageName.lastIndexOf("."));
         }

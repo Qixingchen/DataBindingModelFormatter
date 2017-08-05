@@ -4,6 +4,8 @@ import com.intellij.psi.PsiCodeBlock;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiStatement;
+import com.intellij.psi.PsiType;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PropertyUtil;
 
 import org.jetbrains.annotations.NotNull;
@@ -64,5 +66,20 @@ public class FieldUtils {
         }
 
         return false;
+    }
+
+    /**
+     * field is android.databinding.PropertyChangeRegistry or not
+     *
+     * @return {@code true} field is PropertyChangeRegistry
+     * {@code false} otherwise
+     */
+    public static boolean isPropertyChangeRegistry(@NotNull PsiField psiField) {
+
+        return psiField.getType().equals(
+                PsiType.getTypeByName("android.databinding.PropertyChangeRegistry",
+                        psiField.getProject(), GlobalSearchScope.allScope(psiField.getProject())));
+
+
     }
 }
