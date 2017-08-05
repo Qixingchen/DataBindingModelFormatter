@@ -98,7 +98,9 @@ class WriterUtil extends WriteCommandAction.Simple {
     }
 
     /**
-     * add getter and setter for field
+     * add getter and setter for fields
+     *
+     * @param fields filed need add getter / setter
      */
     private void addGetterAndSetter(List<PsiField> fields) {
         String BRName = findBR();
@@ -121,6 +123,11 @@ class WriterUtil extends WriteCommandAction.Simple {
         }
     }
 
+    /**
+     * add DB getter for Field which does not have getter
+     *
+     * @param field field need add DB getter
+     */
     private void addGetter(@NotNull PsiField field) {
         String getter =
                 "public " + field.getType().getPresentableText() + " get" + getFirstUpCaseName(field.getName()) +
@@ -132,12 +139,22 @@ class WriterUtil extends WriteCommandAction.Simple {
         mClass.add(getMethod);
     }
 
+    /**
+     * add DB part for a java getter
+     *
+     * @param psiField field which has a getter need add DB part
+     */
     private void addDBForJavaGetter(@NotNull PsiField psiField) {
         PsiMethod getter = PropertyUtil.findGetterForField(psiField);
         assert getter != null;
         getter.getModifierList().addAnnotation("android.databinding.Bindable");
     }
 
+    /**
+     * add DB setter for Field which does not have setter
+     *
+     * @param field field need add DB setter
+     */
     private void addSetter(@NotNull PsiField field, @NotNull String BRName) {
         String setter = "public void set" + getFirstUpCaseName(field.getName()) +
                 "(" + field.getType().getPresentableText() + " " +
@@ -148,6 +165,11 @@ class WriterUtil extends WriteCommandAction.Simple {
         mClass.add(mFactory.createMethodFromText(setter, mClass));
     }
 
+    /**
+     * add DB part for a java setter
+     *
+     * @param psiField field which has a setter need add DB part
+     */
     private void addDBForJavaSetter(@NotNull PsiField psiField, @NotNull String BRName) {
         PsiMethod setter = PropertyUtil.findSetterForField(psiField);
         PsiCodeBlock codeBlock = setter.getBody();
@@ -160,7 +182,7 @@ class WriterUtil extends WriteCommandAction.Simple {
     }
 
     /**
-     * add PropertyChangeRegistry field and addCallback & removeCallback
+     * add PropertyChangeRegistry field / notifyChange / addCallback / removeCallback
      */
     private void addPropertyMethods() {
         boolean fieldExist = false;
@@ -238,6 +260,13 @@ class WriterUtil extends WriteCommandAction.Simple {
         return name.substring(0, 1).toUpperCase() + name.substring(1);
     }
 
+    /**
+     * find BR class name
+     * find start with class package,to parent package
+     * if not find ,return "BR"
+     *
+     * @return BR class name
+     */
     @NotNull
     private String findBR() {
         GlobalSearchScope scope = GlobalSearchScope.projectScope(getProject());

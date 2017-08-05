@@ -1,28 +1,37 @@
-<idea-plugin version="3">
+<idea-plugin>
     <id>moe.xing.databindingformatter</id>
-    <name>Data Binding Formatter</name>
-    <version>0.0.2</version>
-    <vendor email="databinding@xing.moe" url="http://loli.xing.moe">Qixingchen</vendor>
+    <name>Data Binding Formatter -Databinding Generater</name>
+    <version>0.1.0</version>
+    <vendor email="databinding@xing.moe" url="https://loli.xing.moe">Qixingchen</vendor>
 
     <description><![CDATA[
      <html> Quickly add android data binding setter and getter for a model.<br>
 <br>
       After created model,open Generate window, select Data Binding Formatter.<br>
 <br>
-      In this preview version,you still have to manually add import for BR class and add implements Observable.<br>
-<br>
       todo:<br>
-      find exits getter and setter.<br>
-      allow select field.<br>
+      allow set notify method name.<br>
 <br>
       <a href="https://github.com/Qixingchen/DataBindingModelFormatter">GitHub repo</a>: https://github.com/Qixingchen/DataBindingModelFormatter <br>
       <br>
       If you find a Bug,please create a Issue in <a href="https://github.com/Qixingchen/DataBindingModelFormatter/issues/new">GitHub</a>
+
+      <br> screenshot:
+      <br> <img src="https://github.com/Qixingchen/DataBindingModelFormatter/raw/master/screenshot/screenshot.gif">
 <br>
       </html>
     ]]></description>
 
-    <change-notes/>
+    <change-notes><![CDATA[
+  <p>
+  0.1.0
+  <ul>
+  <li> can select fields</li>
+  <li> Support for exist Java Getter /Setter </li>
+  <li> PropertyChangeRegistry field and methods will auto add</li>
+  </ul>
+  </p>
+]]></change-notes>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
     <idea-version since-build="141"/>
@@ -44,7 +53,8 @@
 
     <actions>
         <!-- Add your actions here -->
-        <action id="databindingformatter" class="moe.xing.databindingformatter.MainAction" text="Data Binding Formatter"
+        <action class="moe.xing.databindingformatter.MainAction" id="databindingformatter"
+                text="Data Binding Formatter"
                 description="Data Binding Formatter">
             <add-to-group group-id="GenerateGroup" anchor="first"/>
         </action>
