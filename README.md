@@ -4,10 +4,14 @@ quickly add data binding getter and setter for a model
 After created model,open Generate window, select Data Binding Formatter.<br>
 
 todo:<br>
-- [ ] find exits getter and setter.<br>
-- [ ] allow select field.<br>
+- [x] find exits getter and setter.<br>
+- [x] allow select field.<br>
+- [ ] allow set notify method name.  
 
 ## screenshot
+
+gif:  
+![gif](./screenshot/screenshot.gif)
 
 Before Format:</br>
 ![](./screenshot/1.png)
