@@ -218,7 +218,7 @@ class WriterUtil extends WriteCommandAction.Simple {
 
         if (!notifyChangeExist) {
 
-            String pcrNotifyMethodCreate = "private void notifyChange(int propertyId) {\n" +
+            String pcrNotifyMethodCreate = "private synchronized void notifyChange(int propertyId) {\n" +
                     "        if (propertyChangeRegistry == null) {\n" +
                     "            propertyChangeRegistry = new PropertyChangeRegistry();\n" +
                     "        }\n" +
@@ -229,7 +229,7 @@ class WriterUtil extends WriteCommandAction.Simple {
         }
         if (!addListenerExist) {
             String pcrAddListener =
-                    "public void addOnPropertyChangedCallback(OnPropertyChangedCallback callback) {\n" +
+                    "public synchronized void addOnPropertyChangedCallback(OnPropertyChangedCallback callback) {\n" +
                             "        if (propertyChangeRegistry == null) {\n" +
                             "            propertyChangeRegistry = new PropertyChangeRegistry();\n" +
                             "        }\n" +
@@ -242,7 +242,7 @@ class WriterUtil extends WriteCommandAction.Simple {
         }
         if (!removeListenerExist) {
             String pcrRemoveListener =
-                    "public void removeOnPropertyChangedCallback(OnPropertyChangedCallback callback) {\n" +
+                    "public synchronized void removeOnPropertyChangedCallback(OnPropertyChangedCallback callback) {\n" +
                             "        if (propertyChangeRegistry != null) {\n" +
                             "            propertyChangeRegistry.remove(callback);\n" +
                             "        }\n" +
