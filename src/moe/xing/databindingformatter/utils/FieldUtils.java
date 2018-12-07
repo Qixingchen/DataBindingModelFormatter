@@ -1,5 +1,7 @@
 package moe.xing.databindingformatter.utils;
 
+import com.intellij.ide.util.PropertiesComponent;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiCodeBlock;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMethod;
@@ -11,6 +13,10 @@ import com.intellij.psi.util.PropertyUtil;
 import org.jetbrains.annotations.NotNull;
 
 public class FieldUtils {
+
+    //for fork project: PLS change this name
+    private static String USING_ANDROIDX = "DATA_BINDING_MODEL_FORMATTER_HOSHI_USING_ANDROIDX";
+
     /**
      * field has getter or not
      *
@@ -39,7 +45,9 @@ public class FieldUtils {
      */
     public static boolean hasDBGetter(@NotNull PsiField psiField) {
         PsiMethod getter = PropertyUtil.findGetterForField(psiField);
-        return getter != null && getter.getModifierList().findAnnotation("android.databinding.Bindable") != null;
+        return getter != null &&
+                (getter.getModifierList().findAnnotation("android.databinding.Bindable") != null ||
+                        getter.getModifierList().findAnnotation("androidx.databinding.Bindable") != null);
     }
 
     /**
@@ -69,7 +77,7 @@ public class FieldUtils {
     }
 
     /**
-     * field is android.databinding.PropertyChangeRegistry or not
+     * field is PropertyChangeRegistry or not
      *
      * @return {@code true} field is PropertyChangeRegistry
      * {@code false} otherwise
@@ -78,8 +86,19 @@ public class FieldUtils {
 
         return psiField.getType().equals(
                 PsiType.getTypeByName("android.databinding.PropertyChangeRegistry",
+                        psiField.getProject(), GlobalSearchScope.allScope(psiField.getProject())))
+                || psiField.getType().equals(
+                PsiType.getTypeByName("androidx.databinding.PropertyChangeRegistry",
                         psiField.getProject(), GlobalSearchScope.allScope(psiField.getProject())));
 
 
+    }
+
+    public static boolean usingAndroidX(Project project) {
+        return PropertiesComponent.getInstance(project).getBoolean(USING_ANDROIDX, false);
+    }
+
+    public static void setUsingAndroidx(Project project, boolean using) {
+        PropertiesComponent.getInstance(project).setValue(USING_ANDROIDX, using);
     }
 }

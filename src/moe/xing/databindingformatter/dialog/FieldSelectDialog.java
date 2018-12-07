@@ -1,5 +1,6 @@
 package moe.xing.databindingformatter.dialog;
 
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiField;
 
@@ -13,14 +14,18 @@ import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nonnull;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import moe.xing.databindingformatter.utils.FieldUtils;
 
@@ -30,6 +35,7 @@ public class FieldSelectDialog extends JDialog {
     private JButton buttonOK;
     private JButton buttonCancel;
     private JList fieldList;
+    private JCheckBox checkBoxAndroidX;
     private DefaultListModel<Field> listModel = new DefaultListModel<>();
 
     @NotNull
@@ -38,9 +44,13 @@ public class FieldSelectDialog extends JDialog {
     @NotNull
     private PsiClass mPsiClass;
 
-    public FieldSelectDialog(@NotNull FieldSelectEvent event, @NotNull PsiClass psiClass) {
+    @NotNull
+    private Project mProject;
+
+    public FieldSelectDialog(@NotNull FieldSelectEvent event, @NotNull PsiClass psiClass, @Nonnull Project project) {
         mEvent = event;
         mPsiClass = psiClass;
+        mProject = project;
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
@@ -74,6 +84,16 @@ public class FieldSelectDialog extends JDialog {
                 onCancel();
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+
+        // using AndroidX
+        checkBoxAndroidX.setSelected(FieldUtils.usingAndroidX(mProject));
+
+        checkBoxAndroidX.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                FieldUtils.setUsingAndroidx(mProject, checkBoxAndroidX.isSelected());
+            }
+        });
 
         init();
     }

@@ -75,7 +75,7 @@ class WriterUtil extends WriteCommandAction.Simple {
      */
     private void addImplements() {
         final PsiClassType[] implementsListTypes = mClass.getImplementsListTypes();
-        PsiClass Observable = JavaPsiFacade.getInstance(getProject()).findClass("android.databinding.Observable", mSearchScope);
+        PsiClass Observable = JavaPsiFacade.getInstance(getProject()).findClass(getDataBindingPackageName() + ".Observable", mSearchScope);
         if (Observable == null) {
             return;
         }
@@ -135,7 +135,7 @@ class WriterUtil extends WriteCommandAction.Simple {
                         "return " + field.getName() + "; \n" +
                         "}";
         PsiMethod getMethod = mFactory.createMethodFromText(getter, mClass);
-        getMethod.getModifierList().addAnnotation("android.databinding.Bindable");
+        getMethod.getModifierList().addAnnotation(getDataBindingPackageName() + ".Bindable");
         mClass.add(getMethod);
     }
 
@@ -147,7 +147,7 @@ class WriterUtil extends WriteCommandAction.Simple {
     private void addDBForJavaGetter(@NotNull PsiField psiField) {
         PsiMethod getter = PropertyUtil.findGetterForField(psiField);
         assert getter != null;
-        getter.getModifierList().addAnnotation("android.databinding.Bindable");
+        getter.getModifierList().addAnnotation(getDataBindingPackageName() + ".Bindable");
     }
 
     /**
@@ -191,7 +191,7 @@ class WriterUtil extends WriteCommandAction.Simple {
         boolean removeListenerExist = false;
         for (PsiField field : mClass.getFields()) {
             // if has PropertyChangeRegistry ,do not add
-            if (field.getType().equals(PsiType.getTypeByName("android.databinding.PropertyChangeRegistry", getProject(), mSearchScope))) {
+            if (field.getType().equals(PsiType.getTypeByName(getDataBindingPackageName() + ".PropertyChangeRegistry", getProject(), mSearchScope))) {
                 fieldExist = true;
                 break;
             }
@@ -211,7 +211,10 @@ class WriterUtil extends WriteCommandAction.Simple {
 
         if (!fieldExist) {
             String pcrFieldCreate = "private "
-                    .concat(" transient android.databinding.PropertyChangeRegistry propertyChangeRegistry = new android.databinding.PropertyChangeRegistry();");
+                    .concat(" transient ").concat(getDataBindingPackageName())
+                    .concat(".PropertyChangeRegistry propertyChangeRegistry = new ")
+                    .concat(getDataBindingPackageName())
+                    .concat(".PropertyChangeRegistry();");
 
             mClass.add(mFactory.createFieldFromText(pcrFieldCreate, mClass));
         }
@@ -283,5 +286,14 @@ class WriterUtil extends WriteCommandAction.Simple {
             packageName = packageName.substring(0, packageName.lastIndexOf("."));
         }
         return "BR";
+    }
+
+    /**
+     * get DataBinding PackageName
+     *
+     * @return android.databinding or androidx.databinding
+     */
+    private String getDataBindingPackageName() {
+        return FieldUtils.usingAndroidX(mProject) ? "androidx.databinding" : "android.databinding";
     }
 }

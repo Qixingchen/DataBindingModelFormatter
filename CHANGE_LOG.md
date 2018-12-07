@@ -1,3 +1,6 @@
+V0.2.0:
+ support AndroidX
+
 V0.1.1:  
   add synchronized keyword for Observable methods  
 

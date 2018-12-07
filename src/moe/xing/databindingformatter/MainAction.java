@@ -70,7 +70,7 @@ public class MainAction extends BaseGenerateAction {
                 throwable.printStackTrace();
             }
 
-        }, mClass);
+        }, mClass, mProject);
 
         fieldSelectDialog.setMinimumSize(new Dimension(400, 300));
         fieldSelectDialog.setLocationRelativeTo(null);

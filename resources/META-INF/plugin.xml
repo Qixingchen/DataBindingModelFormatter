@@ -1,13 +1,15 @@
 <idea-plugin>
     <id>moe.xing.databindingformatter</id>
     <name>Data Binding Formatter : Databinding Model Generator</name>
-    <version>0.1.1</version>
+    <version>0.2.0</version>
     <vendor email="databinding@loli.xing.moe" url="https://loli.xing.moe">Qixingchen</vendor>
 
     <description><![CDATA[
      <html> Quickly add android data binding setter and getter ,notifyChange and PropertyChangeRegistry methods for a model.<br>
 <br>
       After created model,open Generate window, select Data Binding Formatter.<br>
+<br>
+      AndroidX supported.
 <br>
       todo:<br>
       allow set notify method name.<br>
@@ -24,10 +26,18 @@
 
     <change-notes><![CDATA[
   <p>
+  0.2.0
+  <ul>
+  <li> support androidX </li>
+  </ul>
+  </p>
+
+  <p>
   0.1.1
   <ul>
   <li> add synchronized keyword for Observable methods</li>
   </ul>
+  </p>
 
   <p>
   0.1.0
