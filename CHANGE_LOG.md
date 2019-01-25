@@ -1,3 +1,7 @@
+V0.3.0:
+use PropertyUtil to generate getter and setter name  
+fix #5 (BR field name should start with lower case)
+
 V0.2.0:
  support AndroidX
 

@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>moe.xing.databindingformatter</id>
     <name>Data Binding Formatter : Databinding Model Generator</name>
-    <version>0.2.0</version>
+    <version>0.3.0</version>
     <vendor email="databinding@loli.xing.moe" url="https://loli.xing.moe">Qixingchen</vendor>
 
     <description><![CDATA[
@@ -25,6 +25,14 @@
     ]]></description>
 
     <change-notes><![CDATA[
+  <p>
+  0.3.0
+  <ul>
+  <li> use PropertyUtil to generate getter and setter name </li>
+  <li> fix #5 (BR field name should start with lower case) </li>
+  </ul>
+  </p>
+
   <p>
   0.2.0
   <ul>

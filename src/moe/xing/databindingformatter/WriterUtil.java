@@ -12,6 +12,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiJavaCodeReferenceElement;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiModifier;
 import com.intellij.psi.PsiReferenceList;
 import com.intellij.psi.PsiStatement;
 import com.intellij.psi.PsiType;
@@ -130,7 +131,8 @@ class WriterUtil extends WriteCommandAction.Simple {
      */
     private void addGetter(@NotNull PsiField field) {
         String getter =
-                "public " + field.getType().getPresentableText() + " get" + getFirstUpCaseName(field.getName()) +
+                "public " + (field.hasModifierProperty(PsiModifier.STATIC) ? "static " : "") +
+                        field.getType().getPresentableText() + " " + PropertyUtil.suggestGetterName(field) +
                         "(){ \n" +
                         "return " + field.getName() + "; \n" +
                         "}";
@@ -156,11 +158,12 @@ class WriterUtil extends WriteCommandAction.Simple {
      * @param field field need add DB setter
      */
     private void addSetter(@NotNull PsiField field, @NotNull String BRName) {
-        String setter = "public void set" + getFirstUpCaseName(field.getName()) +
+        String setter = "public " + (field.hasModifierProperty(PsiModifier.STATIC) ? "static " : "")
+                + "void " + PropertyUtil.suggestSetterName(field) +
                 "(" + field.getType().getPresentableText() + " " +
                 field.getName() + "){\n " +
                 "        this." + field.getName() + " = " + field.getName() + ";\n" +
-                "        notifyChange( " + BRName + "." + field.getName() + ");\n" +
+                "        notifyChange( " + BRName + "." + getFirstLowCaseName(field.getName()) + ");\n" +
                 "    }";
         mClass.add(mFactory.createMethodFromText(setter, mClass));
     }
@@ -256,11 +259,11 @@ class WriterUtil extends WriteCommandAction.Simple {
         }
     }
 
-    private String getFirstUpCaseName(String name) {
+    private String getFirstLowCaseName(String name) {
         if (TextUtils.isEmpty(name)) {
             return name;
         }
-        return name.substring(0, 1).toUpperCase() + name.substring(1);
+        return name.substring(0, 1).toLowerCase() + name.substring(1);
     }
 
     /**
